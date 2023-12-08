@@ -8,7 +8,7 @@ static ARTICLE_TABLE: &str = "
     id UUID PRIMARY KEY NOT NULL,
     title TEXT NOT NULL,
     auther_id UUID NOT NULL,
-    body TEXT,
+    body TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL,
     UNIQUE(title)
@@ -53,17 +53,26 @@ impl Article {
     }
 
     pub async fn persist(&self, pool: &PgPool) -> Result<&Self, sqlx::Error> {
-        sqlx::query(ARTICLE_CREATE)
-            .bind(&self.id)
-            .bind(&self.title)
-            .bind(&self.auther_id)
-            .bind(&self.body)
-            .bind(&self.created_at)
-            .bind(&self.updated_at)
-            .execute(pool)
-            .await?;
+        sqlx::query!(
+            "INSERT INTO articles (id, title, auther_id, body, created_at, updated_at)
+            VALUES ($1, $2, $3, $4, $5, $6)",
+            &self.id,
+            &self.title,
+            &self.auther_id,
+            &self.body,
+            &self.created_at,
+            &self.updated_at
+        )
+        .execute(pool)
+        .await?;
 
         Ok(self)
+    }
+
+    pub async fn read(pool: &PgPool, id: Uuid) -> Result<Option<Self>, sqlx::Error> {
+        sqlx::query_as!(Self, r#"select * from articles where id=$1"#, id,)
+            .fetch_optional(pool)
+            .await
     }
 
     pub async fn read_all_id(pool: &PgPool) -> Result<Vec<Uuid>, sqlx::Error> {

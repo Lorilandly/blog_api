@@ -9,7 +9,7 @@ use std::env;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let port = env::var("PORT").unwrap_or_else(|_| 3000.to_string());
     let addr = format!("0.0.0.0:{}", port);
-    let db_url = env::var("DB_URL").expect("missing env: DB_URL");
+    let db_url = env::var("DATABASE_URL").expect("missing env: DATABASE_URL");
 
     let pool = PgPoolOptions::new()
         .max_connections(5)
@@ -20,9 +20,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let app = Router::new()
         .route(
-            "/",
-            get(controllers::articles::read_articles).post(controllers::articles::post_articles),
+            "/articles",
+            get(controllers::articles::read_all_article_id)
+                .post(controllers::articles::create_article),
         )
+        .route("/articles/:id", get(controllers::articles::read_article))
         .with_state(pool);
 
     let listener = tokio::net::TcpListener::bind(addr).await?;
