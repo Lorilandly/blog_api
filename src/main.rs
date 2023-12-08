@@ -1,7 +1,8 @@
 mod controllers;
 mod models;
+mod routes;
 
-use axum::routing::{get, Router};
+use axum::routing::Router;
 use sqlx::postgres::PgPoolOptions;
 use std::env;
 
@@ -18,20 +19,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     sqlx::migrate!().run(&pool).await?;
 
-    let app = Router::new()
-        .route(
-            "/articles",
-            get(controllers::articles::read_all_article_id)
-                .post(controllers::articles::create_article),
-        )
-        .route(
-            "/articles/:id",
-            get(controllers::articles::read_article)
-                .put(controllers::articles::update_article)
-                .delete(controllers::articles::delete_article),
-        )
-        .with_state(pool);
-
+    let app = Router::new().nest("/api", routes::routes(&pool));
     let listener = tokio::net::TcpListener::bind(addr).await?;
     axum::serve(listener, app).await?;
 
