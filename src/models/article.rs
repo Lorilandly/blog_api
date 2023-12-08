@@ -3,18 +3,6 @@ use serde::Serialize;
 use sqlx::{postgres::PgRow, FromRow, PgPool, Result, Row};
 use uuid::Uuid;
 
-static ARTICLE_TABLE: &str = "
-    CREATE TABLE IF NOT EXISTS articles (
-    id UUID PRIMARY KEY NOT NULL,
-    title TEXT NOT NULL,
-    auther_id UUID NOT NULL,
-    body TEXT NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ NOT NULL,
-    UNIQUE(title)
-    )
-";
-
 static ARTICLE_ALL_ID: &str = "
     select id from articles
 ";
@@ -42,16 +30,11 @@ impl Article {
         }
     }
 
-    pub async fn init(pool: &PgPool) -> Result<()> {
-        sqlx::query(ARTICLE_TABLE).execute(pool).await?;
-        Ok(())
-    }
-
     pub async fn persist(&self, pool: &PgPool) -> Result<&Self> {
         sqlx::query!(
-            "
-            INSERT INTO articles (id, title, auther_id, body, created_at, updated_at)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            "\
+            INSERT INTO articles (id, title, auther_id, body, created_at, updated_at) \
+            VALUES ($1, $2, $3, $4, $5, $6) \
             ",
             &self.id,
             &self.title,
@@ -83,10 +66,10 @@ impl Article {
     pub async fn update(pool: &PgPool, id: Uuid, title: String, body: String) -> Result<u64> {
         let now = chrono::Utc::now();
         Ok(sqlx::query!(
-            "
-            UPDATE articles
-            SET title = $1, body = $2, updated_at = $3
-            WHERE id = $4
+            "\
+            UPDATE articles \
+            SET title = $1, body = $2, updated_at = $3 \
+            WHERE id = $4 \
             ",
             title,
             body,
@@ -100,9 +83,9 @@ impl Article {
 
     pub async fn delete(pool: &PgPool, id: Uuid) -> Result<u64> {
         Ok(sqlx::query!(
-            "
-            DELETE FROM articles
-            WHERE id = $1
+            "\
+            DELETE FROM articles \
+            WHERE id = $1 \
             ",
             id,
         )

@@ -16,7 +16,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .connect(&db_url)
         .await?;
 
-    models::init(&pool).await?;
+    sqlx::migrate!().run(&pool).await?;
 
     let app = Router::new()
         .route(
