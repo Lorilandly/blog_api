@@ -1,5 +1,5 @@
 [package]
-name = "blog_backend"
+name = "blog_api"
 version = "0.1.0"
 edition = "2021"
 
