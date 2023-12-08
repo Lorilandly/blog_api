@@ -53,3 +53,36 @@ pub async fn read_all_article_id(
         }
     }
 }
+
+pub async fn update_article(
+    extract::State(pool): extract::State<PgPool>,
+    extract::Path(id): extract::Path<Uuid>,
+    axum::Json(payload): axum::Json<CreateArticle>,
+) -> StatusCode {
+    match Article::update(&pool, id, payload.title, payload.body).await {
+        Ok(n) => match n {
+            0 => StatusCode::NOT_FOUND,
+            _ => StatusCode::OK,
+        },
+        Err(err) => {
+            println!("{:?}", err);
+            StatusCode::INTERNAL_SERVER_ERROR
+        }
+    }
+}
+
+pub async fn delete_article(
+    extract::State(pool): extract::State<PgPool>,
+    extract::Path(id): extract::Path<Uuid>,
+) -> StatusCode {
+    match Article::delete(&pool, id).await {
+        Ok(n) => match n {
+            0 => StatusCode::NOT_FOUND,
+            _ => StatusCode::OK,
+        },
+        Err(err) => {
+            println!("{:?}", err);
+            StatusCode::INTERNAL_SERVER_ERROR
+        }
+    }
+}

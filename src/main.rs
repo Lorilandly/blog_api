@@ -24,7 +24,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             get(controllers::articles::read_all_article_id)
                 .post(controllers::articles::create_article),
         )
-        .route("/articles/:id", get(controllers::articles::read_article))
+        .route(
+            "/articles/:id",
+            get(controllers::articles::read_article)
+                .put(controllers::articles::update_article)
+                .delete(controllers::articles::delete_article),
+        )
         .with_state(pool);
 
     let listener = tokio::net::TcpListener::bind(addr).await?;
